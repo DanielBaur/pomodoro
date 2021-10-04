@@ -2,6 +2,10 @@
 # This Python program is used to implement a pomodoro timer.
 # see: https://en.wikipedia.org/wiki/Pomodoro_Technique
 # This code is based on Johanes Alt's version of the program. I only adapted it to also become familiar with the os interfacing.
+# $ python3 /path/to/file/pomodoro.py
+# or
+# $ python3 /path/to/file/pomodoro.py 25 5 15 4
+
 
 docstring1 = " 'pomodoro.py' is a software tool helping you to stay focussed according to the Pomodoro method."
 docstring2 = "\tWorking shifts of 't_pomodori_min' minutes are followed by pauses of 't_pause_short_min' minutes."
