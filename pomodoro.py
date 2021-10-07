@@ -133,7 +133,7 @@ def pomodoro(
             ### pauses
 
             # counting up to 't_pause_short_min' and 't_pause_long_min'
-            t_pause_min = t_pause_long_min if n_pomodori or (ctr_pauses > n_pomodori and ctr_pauses % n_pomodori == 1) else t_pause_short_min 
+            t_pause_min = t_pause_long_min if ctr_pauses == n_pomodori or (ctr_pauses > n_pomodori and ctr_pauses % n_pomodori == 1) else t_pause_short_min 
             timestamp_start = datetime.datetime.now()
             while (datetime.datetime.now() -timestamp_start).seconds/60 <= t_pause_min:
                 temp = datetime.datetime.now() -timestamp_start
@@ -151,7 +151,7 @@ def pomodoro(
             print(f"\tpause #{ctr_pauses}: {tdToDict(temp)['hours']:02d}:{tdToDict(temp)['minutes']:02d}:{tdToDict(temp)['seconds']:02d} h")
 
     except KeyboardInterrupt:
-        interruptstring = f"\n\n\npomodoro.py: Done! In total you were working for {tdToDict(duration_shifts +duration_pauses)['hours']:02d}:{tdToDict(duration_shifts +duration_pauses)['minutes']:02d}:{tdToDict(duration_shifts +duration_pauses)['seconds']:02d} h straight!\n\t{ctr_shifts} shift(s), adding up to {tdToDict(duration_shifts)['hours']:02d}:{tdToDict(duration_shifts)['minutes']:02d}:{tdToDict(duration_shifts)['seconds']:02d} h \n\t{ctr_pauses} pause(s), adding up to {tdToDict(duration_pauses)['hours']:02d}:{tdToDict(duration_pauses)['minutes']:02d}:{tdToDict(duration_pauses)['seconds']:02d} s\n\n\n"
+        interruptstring = f"\n\n\npomodoro.py: Done! In total you were working for {tdToDict(duration_shifts +duration_pauses)['hours']:02d}:{tdToDict(duration_shifts +duration_pauses)['minutes']:02d}:{tdToDict(duration_shifts +duration_pauses)['seconds']:02d} h straight!\n\t{ctr_shifts} shift(s), adding up to {tdToDict(duration_shifts)['hours']:02d}:{tdToDict(duration_shifts)['minutes']:02d}:{tdToDict(duration_shifts)['seconds']:02d} h \n\t{ctr_pauses} pause(s), adding up to {tdToDict(duration_pauses)['hours']:02d}:{tdToDict(duration_pauses)['minutes']:02d}:{tdToDict(duration_pauses)['seconds']:02d} h\n\n\n"
         print(interruptstring)
 
 
