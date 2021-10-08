@@ -1,0 +1,12 @@
+
+# required Python3 libraries
+
+time
+argparse
+sys
+os
+subprocess
+datetime
+keyboard == 0.13.5
+json
+ 
