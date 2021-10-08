@@ -24,6 +24,8 @@ import sys
 import os
 import subprocess
 import datetime
+import keyboard
+import json
 
 
 
@@ -39,6 +41,33 @@ default_pomodoro_parameters = {
     "t_pause_short_min" : 5,
     "t_pause_long_min" : 15,
     "n_pomodori" : 4}
+
+
+filename_record_file = "record_file.txt"
+
+
+weekdays = {
+    "2" : "Monday",
+    "3" : "Tuesday",
+    "4" : "Wednesday",
+    "5" : "Thursday",
+    "6" : "Friday",
+    "7" : "Saturday",
+    "1" : "Sunday"}
+
+
+# This function is used to retrieve a Python3 dictionary stored as a .json file (copied from monxeana).
+def get_dict_from_json(input_pathstring_json_file):
+    with open(input_pathstring_json_file, "r") as json_input_file:
+        ret_dict = json.load(json_input_file)
+    return ret_dict
+
+
+# This function is used to save a Python3 dictionary as a .json file (copied from monxeana).
+def write_dict_to_json(output_pathstring_json_file, save_dict):
+    with open(output_pathstring_json_file, "w") as json_output_file:
+        json.dump(save_dict, json_output_file, indent=4)
+    return
 
 
 # This function is used to ask the user for his/her pomodoro parameters if not specified upon program call.
@@ -81,6 +110,27 @@ def tdToDict(td:datetime.timedelta) -> dict:
     }
 
 
+# This function is used to write the finished working session to a history/highscore file.
+def record_pomodoro_session(
+    abspath_record_file,
+    record_dict):
+
+    # retrieving current 'record_file' data
+    try:
+        save_dict = get_dict_from_json(abspath_record_file)
+    except:
+        save_dict = {}
+
+    # adding the new session
+    save_dict.update(record_dict)
+
+    # saving the 'record_dict'
+    write_dict_to_json(abspath_record_file, save_dict)
+
+    return
+
+
+
 
 ##################################################
 ### Main Definition
@@ -97,8 +147,9 @@ def pomodoro(
     # preparations
     print(f"pomodoro.py:\n\tt_pomodori_min = {t_pomodori_min} minute(s)\n\tt_pause_short_min = {t_pause_short_min} minute(s)\n\tt_pause_long_min = {t_pause_long_min} minute(s)\n\tn_pomodori = {n_pomodori}\n\n")
     print(f"pomodoro.py:")
-    ctr_shifts = 0
-    ctr_pauses = 0
+    ctr_shifts = 1
+    ctr_pauses = 1
+    start_date = datetime.datetime.now()
     duration_shifts = datetime.timedelta()
     duration_pauses = datetime.timedelta()
 
@@ -111,14 +162,17 @@ def pomodoro(
 
             # counting up to 't_pomodori_min'
             timestamp_start = datetime.datetime.now()
-            while (datetime.datetime.now()-timestamp_start).seconds/60 <= t_pomodori_min:
-               temp = datetime.datetime.now() -timestamp_start
-               print(f"\tshift #{ctr_shifts+1}: {tdToDict(temp)['hours']:02d}:{tdToDict(temp)['minutes']:02d}:{tdToDict(temp)['seconds']:02d} h", end="\r")
-               time.sleep(1)
+            manual_pause = False
+            while (datetime.datetime.now()-timestamp_start).seconds/60 <= t_pomodori_min and manual_pause == False:
+                manual_pause = keyboard.is_pressed("p")
+                temp = datetime.datetime.now() -timestamp_start
+                print(f"\tshift #{ctr_shifts}: {tdToDict(temp)['hours']:02d}:{tdToDict(temp)['minutes']:02d}:{tdToDict(temp)['seconds']:02d} h", end="\r")
+                time.sleep(0.01)
 
             # info: time is up
-            zenity_cmd = "zenity --info --text='wörkse time is up'"
-            zenity_return = subprocess.run(zenity_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if manual_pause == False:
+                zenity_cmd = "zenity --info --text='wörkse time is up'"
+                zenity_return = subprocess.run(zenity_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             #stdout = zenity_return.stdout.decode('utf-8')
             #stderr = zenity_return.stderr.decode('utf-8')
             #print(f"stdout: --->{stdout}<---")
@@ -127,32 +181,42 @@ def pomodoro(
             # determining the duration of the shift
             temp = datetime.datetime.now() -timestamp_start
             duration_shifts = duration_shifts +temp
-            ctr_shifts += 1
             print(f"\tshift #{ctr_shifts}: {tdToDict(temp)['hours']:02d}:{tdToDict(temp)['minutes']:02d}:{tdToDict(temp)['seconds']:02d} h")
+            ctr_shifts += 1
 
             ### pauses
 
             # counting up to 't_pause_short_min' and 't_pause_long_min'
-            t_pause_min = t_pause_long_min if ctr_pauses == n_pomodori or (ctr_pauses > n_pomodori and ctr_pauses % n_pomodori == 1) else t_pause_short_min 
+            t_pause_min = t_pause_long_min if ctr_pauses % n_pomodori == 0 else t_pause_short_min 
             timestamp_start = datetime.datetime.now()
-            while (datetime.datetime.now() -timestamp_start).seconds/60 <= t_pause_min:
+            manual_work = False
+            while (datetime.datetime.now() -timestamp_start).seconds/60 <= t_pause_min and manual_work == False:
+                manual_work = keyboard.is_pressed("w")
                 temp = datetime.datetime.now() -timestamp_start
-                print(f"\tpause #{ctr_pauses+1}: {tdToDict(temp)['hours']:02d}:{tdToDict(temp)['minutes']:02d}:{tdToDict(temp)['seconds']:02d} h", end="\r")
-                time.sleep(1)
+                print(f"\tpause #{ctr_pauses}: {tdToDict(temp)['hours']:02d}:{tdToDict(temp)['minutes']:02d}:{tdToDict(temp)['seconds']:02d} h", end="\r")
+                time.sleep(0.01)
 
             # info: time is up
-            zenity_cmd = "zenity --info --text='pause time is up'"
-            zenity_return = subprocess.run(zenity_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if manual_pause == False:
+                zenity_cmd = "zenity --info --text='pause time is up'"
+                zenity_return = subprocess.run(zenity_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             # determining the duration of the pause
             temp = datetime.datetime.now() -timestamp_start
             duration_pauses = duration_pauses +temp
-            ctr_pauses +=1
             print(f"\tpause #{ctr_pauses}: {tdToDict(temp)['hours']:02d}:{tdToDict(temp)['minutes']:02d}:{tdToDict(temp)['seconds']:02d} h")
+            ctr_pauses +=1
 
     except KeyboardInterrupt:
-        interruptstring = f"\n\n\npomodoro.py: Done! In total you were working for {tdToDict(duration_shifts +duration_pauses)['hours']:02d}:{tdToDict(duration_shifts +duration_pauses)['minutes']:02d}:{tdToDict(duration_shifts +duration_pauses)['seconds']:02d} h straight!\n\t{ctr_shifts} shift(s), adding up to {tdToDict(duration_shifts)['hours']:02d}:{tdToDict(duration_shifts)['minutes']:02d}:{tdToDict(duration_shifts)['seconds']:02d} h \n\t{ctr_pauses} pause(s), adding up to {tdToDict(duration_pauses)['hours']:02d}:{tdToDict(duration_pauses)['minutes']:02d}:{tdToDict(duration_pauses)['seconds']:02d} h\n\n\n"
+        interruptstring = f"\n\n\npomodoro.py: Done! In total you were working for {tdToDict(duration_shifts +duration_pauses)['hours']:02d}:{tdToDict(duration_shifts +duration_pauses)['minutes']:02d}:{tdToDict(duration_shifts +duration_pauses)['seconds']:02d} h straight!\n\t{ctr_shifts-1} shift(s), adding up to {tdToDict(duration_shifts)['hours']:02d}:{tdToDict(duration_shifts)['minutes']:02d}:{tdToDict(duration_shifts)['seconds']:02d} h \n\t{ctr_pauses-1} pause(s), adding up to {tdToDict(duration_pauses)['hours']:02d}:{tdToDict(duration_pauses)['minutes']:02d}:{tdToDict(duration_pauses)['seconds']:02d} h\n\n\n"
         print(interruptstring)
+
+    record_dict = {
+        f"{start_date.strftime('%Y%m%d_%H%M')} ({weekdays[str(start_date.weekday())]})" : {
+            "worked" : f"{tdToDict(duration_shifts)['hours']:02d}:{tdToDict(duration_shifts)['minutes']:02d}:{tdToDict(duration_shifts)['seconds']:02d} h",
+            "paused" : f"{tdToDict(duration_pauses)['hours']:02d}:{tdToDict(duration_pauses)['minutes']:02d}:{tdToDict(duration_pauses)['seconds']:02d} h"}
+        }
+    return record_dict
 
 
 
@@ -170,31 +234,33 @@ if __name__ == "__main__":
     # printing text
     print(f"\n\n\n###################################\n### pomodoro.py\n###################################\n\n\npomodoro.py:{docstring1}\n{docstring2}\n{docstring3}\n\n")
 
-    # asking the user for the pomodoro parameters
+    # retrieving the pomodoro parameters
     if len(sys.argv) == 1:
         pomodoro_args = ask_for_pomodoro_parameters()
-        pomodoro(
-            t_pomodori_min = pomodoro_args["t_pomodori_min"],
-            t_pause_short_min = pomodoro_args["t_pause_short_min"],
-            t_pause_long_min = pomodoro_args ["t_pause_long_min"],
-            n_pomodori = pomodoro_args["n_pomodori"])
-
-    # using the pomodoro parameters passed upon program call
     elif len(sys.argv) == 5:
-        pomodoro(
-            t_pomodori_min = int(sys.argv[1]),
-            t_pause_short_min = int(sys.argv[2]),
-            t_pause_long_min = int(sys.argv[3]),
-            n_pomodori = int(sys.argv[4]))
-
-    # raising an exception in any other cases
+        pomodoro_args = default_pomodoro_parameters.copy()
+        pomodoro_args["t_pomodori_min"] = int(sys.argv[1])
+        pomodoro_args["t_pause_short_min"] = int(sys.argv[2])
+        pomodoro_args["t_pause_long_min"] = int(sys.argv[3])
+        pomodoro_args["n_pomodori"] = int(sys.argv[4])
     else:
         raise Exception("")
  
+    # executing the pomodoro main program
+    record_dict = pomodoro(
+        t_pomodori_min = pomodoro_args["t_pomodori_min"],
+        t_pause_short_min = pomodoro_args["t_pause_short_min"],
+        t_pause_long_min = pomodoro_args ["t_pause_long_min"],
+        n_pomodori = pomodoro_args["n_pomodori"])
 
-
-
-
-
-
-
+    # using the pomodoro parameters passed upon program call
+    print(f"worked for {int(record_dict[[*record_dict][0]]['worked'][0:2])} h")
+    h =  int(record_dict[[*record_dict][0]]["worked"][0:2]) 
+    m =  int(record_dict[[*record_dict][0]]["worked"][3:5]) 
+    s =  int(record_dict[[*record_dict][0]]["worked"][6:8]) 
+    print(h,m,s)
+    if s >= 1:
+        print(record_dict)
+        record_pomodoro_session(
+            abspath_record_file = '/'.join(sys.argv[0].split('/')[0:-1]) +'/' +filename_record_file,
+            record_dict = record_dict)
