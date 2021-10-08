@@ -54,13 +54,13 @@ filename_record_file = "record_file.txt"
 
 
 weekdays = {
-    "2" : "Monday",
-    "3" : "Tuesday",
-    "4" : "Wednesday",
-    "5" : "Thursday",
-    "6" : "Friday",
-    "7" : "Saturday",
-    "1" : "Sunday"}
+    "0" : "Monday",
+    "1" : "Tuesday",
+    "2" : "Wednesday",
+    "3" : "Thursday",
+    "4" : "Friday",
+    "5" : "Saturday",
+    "6" : "Sunday"}
 
 
 # This function is used to retrieve a Python3 dictionary stored as a .json file (copied from monxeana).
