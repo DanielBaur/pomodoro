@@ -7,9 +7,16 @@
 # $ python3 /path/to/file/pomodoro.py 25 5 15 4
 
 
-docstring1 = " 'pomodoro.py' is a software tool helping you to stay focussed according to the Pomodoro method."
+# summary
+docstring1 = "\t'pomodoro.py' is a software tool helping you to stay focussed according to the Pomodoro method."
 docstring2 = "\tWorking shifts of 't_pomodori_min' minutes are followed by pauses of 't_pause_short_min' minutes."
 docstring3 = "\tAfter every 'n_pmodori' shifts a short pause is replaced by a long pause of 't_pause_long_min' minutes."
+
+
+# controls
+docstring4 = "\t'ctrl+c' end the pomodoro.py session"
+docstring5 = "\t'ctrl+q+p' preemptively start a pause during a work shift"
+docstring6 = "\t'ctrl+q+w' preemptively start a work session during a pause"
 
 
 
@@ -164,7 +171,7 @@ def pomodoro(
             timestamp_start = datetime.datetime.now()
             manual_pause = False
             while (datetime.datetime.now()-timestamp_start).seconds/60 <= t_pomodori_min and manual_pause == False:
-                manual_pause = keyboard.is_pressed("p")
+                manual_pause = keyboard.is_pressed("ctrl+q+p")
                 temp = datetime.datetime.now() -timestamp_start
                 print(f"\tshift #{ctr_shifts}: {tdToDict(temp)['hours']:02d}:{tdToDict(temp)['minutes']:02d}:{tdToDict(temp)['seconds']:02d} h", end="\r")
                 time.sleep(0.01)
@@ -191,7 +198,7 @@ def pomodoro(
             timestamp_start = datetime.datetime.now()
             manual_work = False
             while (datetime.datetime.now() -timestamp_start).seconds/60 <= t_pause_min and manual_work == False:
-                manual_work = keyboard.is_pressed("w")
+                manual_work = keyboard.is_pressed("ctrl+q+w")
                 temp = datetime.datetime.now() -timestamp_start
                 print(f"\tpause #{ctr_pauses}: {tdToDict(temp)['hours']:02d}:{tdToDict(temp)['minutes']:02d}:{tdToDict(temp)['seconds']:02d} h", end="\r")
                 time.sleep(0.01)
@@ -208,7 +215,7 @@ def pomodoro(
             ctr_pauses +=1
 
     except KeyboardInterrupt:
-        interruptstring = f"\n\n\npomodoro.py: Done! In total you were working for {tdToDict(duration_shifts +duration_pauses)['hours']:02d}:{tdToDict(duration_shifts +duration_pauses)['minutes']:02d}:{tdToDict(duration_shifts +duration_pauses)['seconds']:02d} h straight!\n\t{ctr_shifts-1} shift(s), adding up to {tdToDict(duration_shifts)['hours']:02d}:{tdToDict(duration_shifts)['minutes']:02d}:{tdToDict(duration_shifts)['seconds']:02d} h \n\t{ctr_pauses-1} pause(s), adding up to {tdToDict(duration_pauses)['hours']:02d}:{tdToDict(duration_pauses)['minutes']:02d}:{tdToDict(duration_pauses)['seconds']:02d} h\n\n\n"
+        interruptstring = f"\n\n\npomodoro.py: Done! In total you were working for {tdToDict(duration_shifts +duration_pauses)['hours']:02d}:{tdToDict(duration_shifts +duration_pauses)['minutes']:02d}:{tdToDict(duration_shifts +duration_pauses)['seconds']:02d} h straight!\n\t{ctr_shifts-1} shift(s), adding up to {tdToDict(duration_shifts)['hours']:02d}:{tdToDict(duration_shifts)['minutes']:02d}:{tdToDict(duration_shifts)['seconds']:02d} h \n\t{ctr_pauses-1} pause(s), adding up to {tdToDict(duration_pauses)['hours']:02d}:{tdToDict(duration_pauses)['minutes']:02d}:{tdToDict(duration_pauses)['seconds']:02d} h\n\n"
         print(interruptstring)
 
     record_dict = {
@@ -232,7 +239,11 @@ if __name__ == "__main__":
 
 
     # printing text
-    print(f"\n\n\n###################################\n### pomodoro.py\n###################################\n\n\npomodoro.py:{docstring1}\n{docstring2}\n{docstring3}\n\n")
+    print(f"\n\n\n###################################\n### pomodoro.py\n###################################\n\n\n")
+    print(f"pomodoro.py: summary\n{docstring1}\n{docstring2}\n{docstring3}\n\n")
+    print(f"pomodoro.py: controls\n{docstring4}\n{docstring5}\n{docstring6}\n\n")
+
+
 
     # retrieving the pomodoro parameters
     if len(sys.argv) == 1:
@@ -254,13 +265,12 @@ if __name__ == "__main__":
         n_pomodori = pomodoro_args["n_pomodori"])
 
     # using the pomodoro parameters passed upon program call
-    print(f"worked for {int(record_dict[[*record_dict][0]]['worked'][0:2])} h")
     h =  int(record_dict[[*record_dict][0]]["worked"][0:2]) 
     m =  int(record_dict[[*record_dict][0]]["worked"][3:5]) 
     s =  int(record_dict[[*record_dict][0]]["worked"][6:8]) 
-    print(h,m,s)
-    if s >= 1:
-        print(record_dict)
+    if h >= 1:
+        print(f"pomodoro.py: You were working for more than one hour; the session was recorded.\n\n")
         record_pomodoro_session(
             abspath_record_file = '/'.join(sys.argv[0].split('/')[0:-1]) +'/' +filename_record_file,
             record_dict = record_dict)
+    print("\n")
