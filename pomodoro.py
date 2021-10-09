@@ -16,7 +16,7 @@ docstring3 = "\tAfter every 'n_pmodori' shifts a short pause is replaced by a lo
 # controls
 docstring4 = "\t'ctrl+c' end the pomodoro.py session"
 docstring5 = "\t'ctrl+q+p' preemptively start a pause during a work shift"
-docstring6 = "\t'ctrl+q+w' preemptively start a work session during a pause"
+docstring6 = "\t'ctrl+q+r' preemptively start a work session during a pause"
 
 
 
@@ -153,7 +153,7 @@ def pomodoro(
 
     # preparations
     print(f"pomodoro.py:\n\tt_pomodori_min = {t_pomodori_min} minute(s)\n\tt_pause_short_min = {t_pause_short_min} minute(s)\n\tt_pause_long_min = {t_pause_long_min} minute(s)\n\tn_pomodori = {n_pomodori}\n\n")
-    print(f"pomodoro.py:")
+    print(f"pomodoro.py: starting at {datetime.datetime.now().strftime('%Y%m%d_%H%M')}")
     ctr_shifts = 1
     ctr_pauses = 1
     start_date = datetime.datetime.now()
@@ -198,7 +198,7 @@ def pomodoro(
             timestamp_start = datetime.datetime.now()
             manual_work = False
             while (datetime.datetime.now() -timestamp_start).seconds/60 <= t_pause_min and manual_work == False:
-                manual_work = keyboard.is_pressed("ctrl+q+w")
+                manual_work = keyboard.is_pressed("ctrl+q+r")
                 temp = datetime.datetime.now() -timestamp_start
                 print(f"\tpause #{ctr_pauses}: {tdToDict(temp)['hours']:02d}:{tdToDict(temp)['minutes']:02d}:{tdToDict(temp)['seconds']:02d} h", end="\r")
                 time.sleep(0.01)
@@ -215,7 +215,7 @@ def pomodoro(
             ctr_pauses +=1
 
     except KeyboardInterrupt:
-        interruptstring = f"\n\n\npomodoro.py: Done! In total you were working for {tdToDict(duration_shifts +duration_pauses)['hours']:02d}:{tdToDict(duration_shifts +duration_pauses)['minutes']:02d}:{tdToDict(duration_shifts +duration_pauses)['seconds']:02d} h straight!\n\t{ctr_shifts-1} shift(s), adding up to {tdToDict(duration_shifts)['hours']:02d}:{tdToDict(duration_shifts)['minutes']:02d}:{tdToDict(duration_shifts)['seconds']:02d} h \n\t{ctr_pauses-1} pause(s), adding up to {tdToDict(duration_pauses)['hours']:02d}:{tdToDict(duration_pauses)['minutes']:02d}:{tdToDict(duration_pauses)['seconds']:02d} h\n\n"
+        interruptstring = f"\n\n\npomodoro.py: Done at {datetime.datetime.now().strftime('%Y%m%d_%H%M')}! In total you were working for {tdToDict(duration_shifts +duration_pauses)['hours']:02d}:{tdToDict(duration_shifts +duration_pauses)['minutes']:02d}:{tdToDict(duration_shifts +duration_pauses)['seconds']:02d} h straight!\n\t{ctr_shifts-1} shift(s), adding up to {tdToDict(duration_shifts)['hours']:02d}:{tdToDict(duration_shifts)['minutes']:02d}:{tdToDict(duration_shifts)['seconds']:02d} h \n\t{ctr_pauses-1} pause(s), adding up to {tdToDict(duration_pauses)['hours']:02d}:{tdToDict(duration_pauses)['minutes']:02d}:{tdToDict(duration_pauses)['seconds']:02d} h\n\n"
         print(interruptstring)
 
     record_dict = {
